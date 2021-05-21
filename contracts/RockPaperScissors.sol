@@ -121,34 +121,7 @@ contract RockPaperScissors {
     return true;
   }
 
-  function computeWinner(address _alice, address _bob, string memory _aliceChoice, string memory _bobChoice) internal {
-    if (moveResults[_aliceChoice][_bobChoice] == 0) {
-      if (!rollOverState[_alice]) {
-        balances[_alice] -= 1;
-        token.transfer(_alice, 1);
-      }
-      if (!rollOverState[_bob]) {
-        balances[_bob] -= 1;
-        token.transfer(_bob, 1);
-      }
-    } else if (moveResults[_aliceChoice][_bobChoice] == 1) {
-      if (!rollOverState[_alice]) {
-        balances[_alice] -= 1;
-        token.transfer(_alice, 2);
-      } else {
-        balances[_alice] += 1;
-      }
-      balances[_bob] -= 1;
-    } else {
-      if (!rollOverState[_bob]) {
-        balances[_bob] -= 1;
-        token.transfer(_bob, 2);
-      } else {
-        balances[_bob] += 1;
-      }
-      balances[_alice] -=1;
-    }
-  }
+
 
   function unlockFunds() public {
     require(alice == msg.sender || bob == msg.sender, "You're currently not in a game...");
@@ -189,8 +162,46 @@ contract RockPaperScissors {
     rollOverState[opponent] = false;
   }
 
-  function stringsEqual(string memory _a, string memory _b) internal pure returns (bool) {
-      return (keccak256(abi.encodePacked((_a))) == keccak256(abi.encodePacked((_b))));
+  function retrieveFromBalance(uint _amount) public returns(bool) {
+    require(msg.sender != alice && msg.sender != bob, "You cannot retrieve funds while in a game.");
+    require(opponents[msg.sender] == address(0), "You cannot retrieve funds while in a game.");
+    require(balances[msg.sender] >= _amount, "You have less than the requested amount in your balance.");
+    token.transfer(msg.sender, _amount);
+    balances[msg.sender] -= _amount;
+    return true;
   }
+
+  function stringsEqual(string memory _a, string memory _b) internal pure returns (bool) {
+    return (keccak256(abi.encodePacked((_a))) == keccak256(abi.encodePacked((_b))));
+  }
+
+  function computeWinner(address _alice, address _bob, string memory _aliceChoice, string memory _bobChoice) internal {
+  if (moveResults[_aliceChoice][_bobChoice] == 0) {
+    if (!rollOverState[_alice]) {
+      token.transfer(_alice, 1);
+      balances[_alice] -= 1;
+    }
+    if (!rollOverState[_bob]) {
+      token.transfer(_bob, 1);
+      balances[_bob] -= 1;
+    }
+  } else if (moveResults[_aliceChoice][_bobChoice] == 1) {
+    if (!rollOverState[_alice]) {
+      token.transfer(_alice, 2);
+      balances[_alice] -= 1;
+    } else {
+      balances[_alice] += 1;
+    }
+    balances[_bob] -= 1;
+  } else {
+    if (!rollOverState[_bob]) {
+      token.transfer(_bob, 2);
+      balances[_bob] -= 1;
+    } else {
+      balances[_bob] += 1;
+    }
+    balances[_alice] -=1;
+  }
+}
 
 }
