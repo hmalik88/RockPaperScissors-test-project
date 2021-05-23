@@ -9,9 +9,7 @@ contract MockCoin is ERC20 {
     string private TOKEN_SYMBOL = "MCK";
 
 
-    constructor() ERC20(TOKEN_NAME, TOKEN_SYMBOL) {
-
-    }
+    constructor() ERC20(TOKEN_NAME, TOKEN_SYMBOL) {}
 
     function mint(uint _amount) public returns (bool) {
         _mint(msg.sender, _amount);
